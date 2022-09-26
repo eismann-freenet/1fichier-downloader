@@ -1,6 +1,6 @@
 # Downloader for 1fichier.com using Tor
 
-Content in Tor is often saved on hosters like [1fichier.com](https://1fichier.com/).
+Content in [Tor](https://www.torproject.org/) is often saved on hosters like [1fichier.com](https://1fichier.com/).
 
 A user named SoupeAuLait from the board Rindexxx (no longer available) wrote a script to download files from 1fichier.com. The script changed the circuit of Tor until a "free slot" for 1fichier.com was found and downloaded the file.
 
@@ -30,7 +30,7 @@ Frost: eismann@5H+yXYkQHMnwtQDzJB8thVYAAIs
 
 FMS: eismann
 
-Sone: [eismann](http://localhost:8888/Sone/viewSone.html?sone=rTzpVIb8X3PoSon~io8IW~Le6ffRp3m-gbpEpvPOF5A) [^1]
+Sone: [eismann](http://localhost:8888/Sone/viewSone.html?sone=rTzpVIb8X3PoSon~io8IW~Le6ffRp3m-gbpEpvPOF5A) [^2]
 
 I do not regularly read the email associated with GitHub.
 
@@ -38,4 +38,5 @@ I do not regularly read the email associated with GitHub.
 
 1fichier.sh by eismann@5H+yXYkQHMnwtQDzJB8thVYAAIs is licensed under the [Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
-[^1]: Link requires a running Freenet node at http://localhost:8888/
+[^1]: Freemail requires a running Freenet node
+[^2]: Link requires a running Freenet node at http://localhost:8888/
