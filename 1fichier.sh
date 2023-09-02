@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#  Copyright 2021-2022 eismann@5H+yXYkQHMnwtQDzJB8thVYAAIs
+#  Copyright 2021-2023 eismann@5H+yXYkQHMnwtQDzJB8thVYAAIs
 #
 #  Licensed under the Apache License, Version 2.0 (the "License");
 #  you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ checkTor() {
 }
 
 tcurl(){
-	curl --proxy "socks5h://${torUser}:${torPassword}@127.0.0.1:${torPort}" --user-agent "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0" --header "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header "Accept-Language: en-US,en;q=0.5" --header "Accept-Encoding: gzip, deflate" --compressed "$@"
+	curl --proxy "socks5h://${torUser}:${torPassword}@127.0.0.1:${torPort}" --connect-timeout 15 --user-agent "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0" --header "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header "Accept-Language: en-US,en;q=0.5" --header "Accept-Encoding: gzip, deflate" --compressed "$@"
 }
 
 failedDownload() {
