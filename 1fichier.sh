@@ -16,6 +16,7 @@
 
 # Some lines were taken from the script 1fichier.sh by SoupeAuLait@Rindexxx
 
+
 checkTor() {
 	local torPort=
 	for port in 9050 9150 ; do
@@ -27,9 +28,11 @@ checkTor() {
 	echo ${torPort}
 }
 
+
 tcurl(){
 	curl --proxy "socks5h://${torUser}:${torPassword}@127.0.0.1:${torPort}" --connect-timeout 15 --user-agent "Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0" --header "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8" --header "Accept-Language: en-US,en;q=0.5" --header "Accept-Encoding: gzip, deflate" --compressed "$@"
 }
+
 
 failedDownload() {
 	local baseDir=${1}
@@ -37,19 +40,27 @@ failedDownload() {
 	echo "${url}" >> "${baseDir}/failed.txt"
 }
 
-cleanUp() {
+
+removeTempDir() {
 	local baseDir=${1}
 	local tempDir=${2}
 	cd "${baseDir}"
 	rm --recursive "${tempDir}"
 }
 
+
+removeCookies() {
+	local cookieFile=${1}
+	rm --force "${cookieFile}"
+}
+
+
 downloadFile() {
 	local url=${1}
 	echo -n "Download ${url}"
 
 	local baseDir=$(pwd)
-	local tempDir=$(mktemp -d "tmp.XXX")
+	local tempDir=$(mktemp --directory "tmp.XXX")
 	cd "${tempDir}"
 
 	local filenameRegEx='>Filename :<.*<td class="normal">(.*)</td>.*>Date :<'
@@ -82,10 +93,10 @@ downloadFile() {
 				slotFound="true"
 				break
 			else
-				rm -f "${cookies}"
+				removeCookies "${cookies}"
 			fi
 		else
-			rm -f "${cookies}"
+			removeCookies "${cookies}"
 		fi
 	done
 
@@ -96,7 +107,7 @@ downloadFile() {
 			echo "Unable to get a slot after ${maxCount} tries."
 			failedDownload "${baseDir}" "${url}"
 		fi
-		cleanUp "${baseDir}" "${tempDir}"
+		removeTempDir "${baseDir}" "${tempDir}"
 		return
 	fi
 
@@ -105,7 +116,7 @@ downloadFile() {
 	if [ "${downloadLink}" ] ; then
 		tcurl --insecure --cookie "${cookies}" --referer "${url}" "${downloadLink}" --remote-header-name --remote-name
 		if [ "$?" = "0" ]; then
-			rm -f "${cookies}"
+			removeCookies "${cookies}"
 			if [ -e "${filename}" ] ; then
 				mv "${filename}" ..
 			else
@@ -119,8 +130,9 @@ downloadFile() {
 		echo "Unable to extract download-link."
 		failedDownload "${baseDir}" "${url}"
 	fi
-	cleanUp "${baseDir}" "${tempDir}"
+	removeTempDir "${baseDir}" "${tempDir}"
 }
+
 
 if [ "$#" -ne 1 ]; then
 	echo "Usage:"
