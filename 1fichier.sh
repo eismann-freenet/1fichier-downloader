@@ -78,7 +78,7 @@ downloadFile() {
 		torPassword="password-${RANDOM}"
 
 		local downloadPage=$(tcurl --insecure --cookie-jar "${cookies}" --silent --show-error "${url}")
-		if [[ "${downloadPage}" =~ ${filenameRegEx} ]]; then
+		if [[ "${downloadPage}" =~ ${filenameRegEx} ]] ; then
 			local filename=${BASH_REMATCH[1]}
 			if [ -e "${baseDir}/${filename}" ] ; then
 				alreadyDownloaded="true"
@@ -116,7 +116,7 @@ downloadFile() {
 	local downloadLink=$(echo "${downloadLinkPage}" | grep --after-context=2 '<div style="width:600px;height:80px;margin:auto;text-align:center;vertical-align:middle">' | grep --only-matching --perl-regexp '<a href="\K[^"]+')
 	if [ "${downloadLink}" ] ; then
 		tcurl --insecure --cookie "${cookies}" --referer "${url}" "${downloadLink}" --remote-header-name --remote-name
-		if [ "$?" = "0" ]; then
+		if [ "$?" = "0" ] ; then
 			removeCookies "${cookies}"
 			if [ -e "${filename}" ] ; then
 				mv "${filename}" ..
@@ -135,15 +135,11 @@ downloadFile() {
 }
 
 
-if [ "$#" -ne 1 ]; then
+if [ "$#" -ne 1 ] ; then
 	echo "Usage:"
 	echo "${0} File-With-URLs"
-	exit 1
-fi
-
-inputFile=${1}
-if [ ! -f "${inputFile}" ]; then
-	echo "Unable to read file ${1}!"
+	echo "or"
+	echo "${0} URL"
 	exit 1
 fi
 
@@ -154,7 +150,16 @@ if [ "${torPort}" = "" ] ; then
 fi
 echo "Tor is listening on port ${torPort}"
 
-while IFS= read -r line
-do
-	downloadFile "${line}"
-done < "${inputFile}"
+downloadSource=${1}
+if [[ "${downloadSource}" =~ "1fichier.com" ]] ; then
+	downloadFile "${downloadSource}"
+else
+	if [ ! -f "${downloadSource}" ] ; then
+		echo "Unable to read file \"${downloadSource}\"!"
+		exit 1
+	fi
+	while IFS= read -r line
+	do
+		downloadFile "${line}"
+	done < "${downloadSource}"
+fi
