@@ -57,7 +57,8 @@ removeCookies() {
 
 downloadFile() {
 	local url=${1}
-	echo -n "Download ${url}"
+	echo "Processing \"${url}\""...
+	echo -n "Search for a circuit without wait time..."
 
 	local baseDir=$(pwd)
 	local tempDir=$(mktemp --directory "tmp.XXX")
@@ -89,7 +90,7 @@ downloadFile() {
 		if [ ! "$?" = "0" ] ; then
 			local checkSlot=$(grep --only-matching --perl-regexp 'name="adz" value="\K[^"]+' <<< "${downloadPage}")
 			if [ ${checkSlot} ] ; then
-				echo "Found"
+				echo "Found. Start downloading..."
 				slotFound="true"
 				break
 			else
@@ -104,7 +105,7 @@ downloadFile() {
 		if [ "${alreadyDownloaded}" = "true" ] ; then
 			echo "Already downloaded. Skipping."
 		elif [ "${slotFound}" = "false" ] ; then
-			echo "Unable to get a slot after ${maxCount} tries."
+			echo "Unable to get a circuit without wait time after ${maxCount} tries."
 			failedDownload "${baseDir}" "${url}"
 		fi
 		removeTempDir "${baseDir}" "${tempDir}"
