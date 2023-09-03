@@ -16,10 +16,6 @@ I grabbed this script and rewrote most parts of it. My improvements are
 ## Usage
 `./1fichier.sh Text-File-With-URLs`
 
-## Warning
-
-Due some recent changes on 1fichier.com, the script does not work anymore. But it may still be useful for someone.
-
 ## Contact
 
 Author: eismann
