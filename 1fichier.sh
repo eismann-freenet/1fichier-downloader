@@ -19,12 +19,12 @@
 checkTor() {
 	local torPort=
 	for port in 9050 9150 ; do
-		echo "" 2>/dev/null > /dev/tcp/127.0.0.1/$port
+		echo "" 2>/dev/null > /dev/tcp/127.0.0.1/${port}
 		if [ "$?" = "0" ] ; then
-			torPort=$port
+			torPort=${port}
 		fi
 	done
-	echo $torPort
+	echo ${torPort}
 }
 
 tcurl(){
@@ -32,33 +32,33 @@ tcurl(){
 }
 
 failedDownload() {
-	local baseDir=$1
-	local url=$2
-	echo $url >> $baseDir/failed.txt
+	local baseDir=${1}
+	local url=${2}
+	echo "${url}" >> "${baseDir}/failed.txt"
 }
 
 cleanUp() {
-	local baseDir=$1
-	local tempDir=$2
-	cd $baseDir
-	rm --recursive $tempDir
+	local baseDir=${1}
+	local tempDir=${2}
+	cd "${baseDir}"
+	rm --recursive "${tempDir}"
 }
 
 downloadFile() {
-	local url=$1
-	echo -n "Download $url"
+	local url=${1}
+	echo -n "Download ${url}"
 
 	local baseDir=$(pwd)
 	local tempDir=$(mktemp -d "tmp.XXX")
-	cd $tempDir
+	cd "${tempDir}"
 
 	local filenameRegEx='>Filename :<.*<td class="normal">(.*)</td>.*>Date :<'
 	local maxCount=500
 	local count=1
 	local slotFound="false"
 	local alreadyDownloaded="false"
-	while [ $count -le $maxCount ] ; do
-		count=$(( $count + 1 ))
+	while [ ${count} -le ${maxCount} ] ; do
+		count=$(( ${count} + 1 ))
 		echo -n "."
 
 		local cookies=$(mktemp "cookies.XXX")
@@ -66,7 +66,7 @@ downloadFile() {
 		torPassword="password-${RANDOM}"
 
 		local downloadPage=$(tcurl --insecure --cookie-jar "${cookies}" --silent --show-error "${url}")
-		if [[ "${downloadPage}" =~ $filenameRegEx ]]; then
+		if [[ "${downloadPage}" =~ ${filenameRegEx} ]]; then
 			local filename=${BASH_REMATCH[1]}
 			if [ -e "${baseDir}/${filename}" ] ; then
 				alreadyDownloaded="true"
@@ -76,8 +76,8 @@ downloadFile() {
 
 		grep --extended-regexp --quiet '<span style="color:red">Warning !</span>|<span style="color:red">Attention !</span>' <<< "${downloadPage}"
 		if [ ! "$?" = "0" ] ; then
-  			local checkSlot=$(grep --only-matching --perl-regexp 'name="adz" value="\K[^"]+' <<< "${downloadPage}")
-			if [ $checkSlot ] ; then
+			local checkSlot=$(grep --only-matching --perl-regexp 'name="adz" value="\K[^"]+' <<< "${downloadPage}")
+			if [ ${checkSlot} ] ; then
 				echo "Found"
 				slotFound="true"
 				break
@@ -89,59 +89,59 @@ downloadFile() {
 		fi
 	done
 
-	if [ "$alreadyDownloaded" = "true" ] || [ "$slotFound" = "false" ] ; then
-		if [ "$alreadyDownloaded" = "true" ] ; then
+	if [ "${alreadyDownloaded}" = "true" ] || [ "${slotFound}" = "false" ] ; then
+		if [ "${alreadyDownloaded}" = "true" ] ; then
 			echo "Already downloaded. Skipping."
-		elif [ "$slotFound" = "false" ] ; then
+		elif [ "${slotFound}" = "false" ] ; then
 			echo "Unable to get a slot after ${maxCount} tries."
-			failedDownload $baseDir $url
+			failedDownload "${baseDir}" "${url}"
 		fi
-		cleanUp $baseDir $tempDir
+		cleanUp "${baseDir}" "${tempDir}"
 		return
 	fi
 
 	local downloadLinkPage=$(tcurl --insecure --location --cookie "${cookies}" --cookie-jar "${cookies}" --silent --show-error --form "submit=Download" --form "adz=${get_me}" "${url}")
 	local downloadLink=$(echo "${downloadLinkPage}" | grep --after-context=2 '<div style="width:600px;height:80px;margin:auto;text-align:center;vertical-align:middle">' | grep --only-matching --perl-regexp '<a href="\K[^"]+')
-	if [ $downloadLink ] ; then
+	if [ "${downloadLink}" ] ; then
 		tcurl --insecure --cookie "${cookies}" --referer "${url}" "${downloadLink}" --remote-header-name --remote-name
 		if [ "$?" = "0" ]; then
 			rm -f "${cookies}"
-			if [ -e ${filename} ] ; then
-				mv ${filename} ..
+			if [ -e "${filename}" ] ; then
+				mv "${filename}" ..
 			else
 				echo "Download failed."
-				failedDownload $baseDir $url
+				failedDownload "${baseDir}" "${url}"
 			fi
 		else
-			failedDownload $baseDir $url
+			failedDownload "${baseDir}" "${url}"
 		fi
 	else
 		echo "Unable to extract download-link."
-		failedDownload $baseDir $url
+		failedDownload "${baseDir}" "${url}"
 	fi
-	cleanUp $baseDir $tempDir
+	cleanUp "${baseDir}" "${tempDir}"
 }
 
 if [ "$#" -ne 1 ]; then
 	echo "Usage:"
-	echo "$0 File-With-URLs"
+	echo "${0} File-With-URLs"
 	exit 1
 fi
 
-inputFile=$1
-if [ ! -f "$inputFile" ]; then
-	echo "Unable to read file $1!"
+inputFile=${1}
+if [ ! -f "${inputFile}" ]; then
+	echo "Unable to read file ${1}!"
 	exit 1
 fi
 
 torPort=$(checkTor)
-if [ "$torPort" = "" ] ; then
+if [ "${torPort}" = "" ] ; then
 	echo "Tor is not running!"
 	exit 1
 fi
-echo "Tor is listening on port $torPort"
+echo "Tor is listening on port ${torPort}"
 
 while IFS= read -r line
 do
-  downloadFile $line
-done < $inputFile
+	downloadFile "${line}"
+done < "${inputFile}"
