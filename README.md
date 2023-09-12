@@ -14,7 +14,12 @@ I grabbed this script and rewrote most parts of it. My improvements are
 - Remove temporary files after download.
 
 ## Usage
-`./1fichier.sh Text-File-With-URLs`
+
+`./1fichier.sh File-With-URLs`
+
+or
+
+`./1fichier.sh URL`
 
 ## Contact
 
