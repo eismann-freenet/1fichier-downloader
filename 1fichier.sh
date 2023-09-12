@@ -42,9 +42,7 @@ failedDownload() {
 
 
 removeTempDir() {
-	local baseDir=${1}
-	local tempDir=${2}
-	cd "${baseDir}"
+	local tempDir=${1}
 	rm --recursive "${tempDir}"
 }
 
@@ -61,8 +59,7 @@ downloadFile() {
 	echo -n "Search for a circuit without wait time..."
 
 	local baseDir=$(pwd)
-	local tempDir=$(mktemp --directory "tmp.XXX")
-	cd "${tempDir}"
+	local tempDir=${baseDir}/$(mktemp --directory "tmp.XXX")
 
 	local filenameRegEx='>Filename :<.*<td class="normal">(.*)</td>.*>Date :<'
 	local maxCount=500
@@ -73,7 +70,7 @@ downloadFile() {
 		count=$(( ${count} + 1 ))
 		echo -n "."
 
-		local cookies=$(mktemp "cookies.XXX")
+		local cookies=$(mktemp --tmpdir="${tempDir}" "cookies.XXX")
 		torUser="user-${RANDOM}"
 		torPassword="password-${RANDOM}"
 
@@ -108,18 +105,18 @@ downloadFile() {
 			echo "Unable to get a circuit without wait time after ${maxCount} tries."
 			failedDownload "${baseDir}" "${url}"
 		fi
-		removeTempDir "${baseDir}" "${tempDir}"
+		removeTempDir "${tempDir}"
 		return
 	fi
 
 	local downloadLinkPage=$(tcurl --insecure --location --cookie "${cookies}" --cookie-jar "${cookies}" --silent --show-error --form "submit=Download" --form "adz=${get_me}" "${url}")
 	local downloadLink=$(echo "${downloadLinkPage}" | grep --after-context=2 '<div style="width:600px;height:80px;margin:auto;text-align:center;vertical-align:middle">' | grep --only-matching --perl-regexp '<a href="\K[^"]+')
 	if [ "${downloadLink}" ] ; then
-		tcurl --insecure --cookie "${cookies}" --referer "${url}" "${downloadLink}" --remote-header-name --remote-name
+		tcurl --insecure --cookie "${cookies}" --referer "${url}" --output "${tempDir}/${filename}" "${downloadLink}" --remote-header-name --remote-name
 		if [ "$?" = "0" ] ; then
 			removeCookies "${cookies}"
-			if [ -e "${filename}" ] ; then
-				mv "${filename}" ..
+			if [ -e "${tempDir}/${filename}" ] ; then
+				mv "${tempDir}/${filename}" "${baseDir}/"
 			else
 				echo "Download failed."
 				failedDownload "${baseDir}" "${url}"
@@ -131,7 +128,7 @@ downloadFile() {
 		echo "Unable to extract download-link."
 		failedDownload "${baseDir}" "${url}"
 	fi
-	removeTempDir "${baseDir}" "${tempDir}"
+	removeTempDir "${tempDir}"
 }
 
 
