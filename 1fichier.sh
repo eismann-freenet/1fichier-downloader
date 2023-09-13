@@ -53,13 +53,23 @@ removeCookies() {
 }
 
 
+cancelDownload() {
+	echo "Download cancelled."
+	removeTempDir "${lastTempDir}"
+	exit 1
+}
+
+
 downloadFile() {
+	trap cancelDownload SIGINT SIGTERM
+
 	local url=${1}
 	echo "Processing \"${url}\""...
 	echo -n "Search for a circuit without wait time..."
 
 	local baseDir=$(pwd)
 	local tempDir=${baseDir}/$(mktemp --directory "tmp.XXX")
+	lastTempDir=${tempDir}
 
 	local filenameRegEx='>Filename :<.*<td class="normal">(.*)</td>.*>Date :<'
 	local maxCount=500
@@ -129,6 +139,8 @@ downloadFile() {
 		failedDownload "${baseDir}" "${url}"
 	fi
 	removeTempDir "${tempDir}"
+
+	trap - SIGINT SIGTERM
 }
 
 
@@ -147,6 +159,7 @@ if [ "${torPort}" = "" ] ; then
 fi
 echo "Tor is listening on port ${torPort}"
 
+lastTempDir=
 downloadSource=${1}
 if [[ "${downloadSource}" =~ "1fichier.com" ]] ; then
 	downloadFile "${downloadSource}"
